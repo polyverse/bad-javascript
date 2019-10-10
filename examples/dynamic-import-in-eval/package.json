@@ -1,0 +1,9 @@
+{
+  "name": "dynamic-import-in-eval",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --experimental-modules --es-module-specifier-resolution=node --experimental-loader ./loader.js ./"
+  }
+}
