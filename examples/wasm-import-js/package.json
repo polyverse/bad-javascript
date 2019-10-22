@@ -1,0 +1,8 @@
+{
+  "name": "wasm-import-js",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --experimental-modules --experimental-wasm-modules --es-module-specifier-resolution=node --experimental-loader ../../shared/https-loader.js ./"
+  }
+}

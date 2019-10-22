@@ -18,12 +18,25 @@ const get = (options) => {
         const { statusCode } = response
 
         if (statusCode === 200) {
-          let body = ''
+          const data = []
 
           response
-            .setEncoding('utf8')
-            .on('data', (chunk) => { body += chunk })
-            .on('end', () => { resolve(body) })
+            .on('data', (chunk) => { 
+              data.push(chunk) 
+            })
+            .on('end', () => {
+              const buffer = Buffer.concat(data)
+              const { pathname } = typeof options === 'string'
+                ? new URL(options)
+                : options
+
+              if (typeof pathname === 'string' &&
+                  extname(pathname) === '.wasm') {
+                resolve(buffer)
+              } else {
+                resolve(buffer.toString('utf8'))
+              }
+            })
         } else {
           reject(new Error(`Request failed. Status code: ${statusCode}`))
         }
@@ -35,7 +48,8 @@ const get = (options) => {
 export async function resolve(specifier, parentModuleURL, defaultResolver) {
   if (! builtinModules.includes(specifier)) {
     parentModuleURL = dataToFileURLMap.get(parentModuleURL) || parentModuleURL
-
+    let rawSpecifier = specifier
+    
     try {
       const url = new URL(specifier, parentModuleURL)
 
@@ -44,10 +58,15 @@ export async function resolve(specifier, parentModuleURL, defaultResolver) {
         const encoded = Buffer.from(body).toString('base64')
         const mediaType = extToMediaTypeMap.get(extname(url.pathname)) || JS_MEDIA_TYPE
 
+        rawSpecifier = url.href 
         specifier = `data:${mediaType};base64,${encoded}`
-        dataToFileURLMap.set(specifier, url.href)
+        dataToFileURLMap.set(specifier, rawSpecifier)
       }
-    } catch {}
+    } catch {
+      const error = new Error(`Cannot find module ${rawSpecifier} imported from ${parentModuleURL}`)
+      error.code = 'ERR_MODULE_NOT_FOUND'
+      throw error
+    }
   }
 
   return defaultResolver(specifier, parentModuleURL)
