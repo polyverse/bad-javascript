@@ -42,7 +42,11 @@ try {
 }
 
 
-
+// Now obvious question - how can you scramble a partial javascript string that cannot be completely resolved? 
+// That’s why symbol scrambling is the game-changer. The symbols .(){};  are unambiguous. 
+// They cannot be reassigned, or taken out of context. Scrambling them breaks even a single-shot function call.
+// This is the difference between "mangling" or "obfuscation", and Polyscripting (changing the language itself.)
+// The langauage has many context-free invariants which can be easily scrambled, tripping the attacker.
 try {
     const message = `"); console.log("I just did a VERY bad thing without the caller knowing. I accessed their hidden value: " + hidden_value); console.log("`;
 
